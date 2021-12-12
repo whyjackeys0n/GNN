@@ -1,7 +1,6 @@
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-
 from model import LeNet
 
 
@@ -24,7 +23,9 @@ def main():
     with torch.no_grad():
         outputs = net(im)
         predict = torch.max(outputs, dim=1)[1].data.numpy()
+        predict_softmax = torch.softmax(outputs, dim=1)
     print(classes[int(predict)])
+    print(predict_softmax)
 
 
 if __name__ == '__main__':

@@ -23,4 +23,3 @@ class LeNet(nn.Module):
         x = F.relu(self.fc2(x))      # output(84)
         x = self.fc3(x)              # output(10)
         return x
-
