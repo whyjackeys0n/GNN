@@ -58,10 +58,10 @@ def train(data):
 
 dataset = KarateClub()
 data = dataset[0]
-# edge_index = data.edge_index
-#
-# G = to_networkx(data, to_undirected=True)
-# visualize_graph(G, color=data.y)
+edge_index = data.edge_index
+
+G = to_networkx(data, to_undirected=True)
+visualize_graph(G, color=data.y)
 
 model = GCN()
 print(model)
