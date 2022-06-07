@@ -72,9 +72,9 @@ visualize_embedding(h, color=data.y)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-for epoch in range(1, 1001):
+for epoch in range(1, 101):
     loss, h = train(data)
-    if epoch % 50 == 0:
+    if epoch % 10 == 0:
         print(f'Epoch: {epoch}, Loss: {loss:.4f}')
         visualize_embedding(h, color=data.y, epoch=epoch, loss=loss)
         time.sleep(0.3)
