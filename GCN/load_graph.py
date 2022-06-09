@@ -109,3 +109,22 @@ for epoch in range(2000):
     losses.append(loss)
     if epoch % 100 == 0:
         print(f"Epoch {epoch} | Train Loss {loss}")
+
+import pandas as pd
+
+# Analyze the results for one batch
+test_batch = next(iter(test_loader))
+with torch.no_grad():
+    test_batch.to(device)
+    pred, embed = model(test_batch.x.float(), test_batch.edge_index, test_batch.batch)
+    df = pd.DataFrame()
+    df["y_real"] = test_batch.y.tolist()
+    df["y_pred"] = pred.tolist()
+df["y_real"] = df["y_real"].apply(lambda row: row[0])
+df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.scatterplot(data=df, x="y_real", y="y_pred")
+plt.show()
