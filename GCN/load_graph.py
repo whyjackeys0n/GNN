@@ -9,7 +9,6 @@ from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 # Load the ESOL dataset
 data = MoleculeNet(root='.', name='ESOL')
 
-
 # Investigating the dataset
 print("Dataset type:", type(data))
 print("Dataset features:", data.num_features)
