@@ -21,7 +21,6 @@ print("Sample edges:", data[0].num_edges)
 
 embedding_size = 64
 
-
 class GCN(torch.nn.Module):
     def __init__(self):
         # Init parent
