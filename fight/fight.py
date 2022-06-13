@@ -23,7 +23,7 @@ def visualize_embedding(h, color, epoch=None, loss=None):
     h = h.detach().cpu().numpy()
     plt.scatter(h[:, 0], h[:, 1], c=color, s=150)
     if epoch is not None and loss is not None:
-        plt.xlabel(f"Epoch: {epoch}, Loss: {loss:.4f}")
+        plt.xlabel(f"Epoch: {epoch}, Loss: {loss:.6f}")
     plt.show()
 
 
@@ -43,17 +43,10 @@ class GCN(torch.nn.Module):
         h = h.tanh()
         h = self.conv3(h, edge_index)
         h = h.tanh()
+
         out = self.classifier(h)
+
         return out, h
-
-
-def train(data):
-    optimizer.zero_grad()
-    out, h = model(data.x, data.edge_index)
-    loss = criterion(out[data.train_mask], data.y[data.train_mask])
-    loss.backward()
-    optimizer.step()
-    return loss, h
 
 
 dataset = KarateClub()
@@ -65,16 +58,27 @@ visualize_graph(G, color=data.y)
 
 model = GCN()
 print(model)
-_, h = model(data.x, data.edge_index)
+
+out, h = model(data.x, data.edge_index)
 print(f'Embedding shape: {list(h.shape)}')
 visualize_embedding(h, color=data.y)
 
-criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+criterion = torch.nn.CrossEntropyLoss()  # Define loss function
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # Define optimizer
 
-for epoch in range(1, 101):
+
+def train(data):
+    optimizer.zero_grad()
+    out, h = model(data.x, data.edge_index)
+    loss = criterion(out[data.train_mask], data.y[data.train_mask])  # semi-supervised learning
+    loss.backward()
+    optimizer.step()
+    return loss, h
+
+
+for epoch in range(1, 10001):
     loss, h = train(data)
-    if epoch % 10 == 0:
-        print(f'Epoch: {epoch}, Loss: {loss:.4f}')
+    if epoch % 1000 == 0:
+        print(f'Epoch: {epoch}, Loss: {loss:.6f}')
         visualize_embedding(h, color=data.y, epoch=epoch, loss=loss)
         time.sleep(0.3)
