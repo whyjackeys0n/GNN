@@ -5,20 +5,12 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, TopKPooling, global_mean_pool
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
+from torch_geometric.data import DataLoader
+import warnings
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Load the ESOL dataset
-data = MoleculeNet(root='.', name='ESOL')
-
-# Investigating the dataset
-print("Dataset type:", type(data))
-print("Dataset features:", data.num_features)
-print("Dataset target:", data.num_classes)
-print("Dataset length:", data.len)
-print("Dataset sample:", data[0])
-print("Sample nodes:", data[0].num_nodes)
-print("Sample edges:", data[0].num_edges)
-
-embedding_size = 64
 
 class GCN(torch.nn.Module):
     def __init__(self):
@@ -49,6 +41,9 @@ class GCN(torch.nn.Module):
         hidden = F.tanh(hidden)
 
         # Global Pooling (stack different aggregations)
+        # gmp: Global Max Pooling
+        # gap: Global Average Pooling
+        # Twice size of the linear output layer
         hidden = torch.cat([gmp(hidden, batch_index),
                             gap(hidden, batch_index)], dim=1)
 
@@ -58,12 +53,24 @@ class GCN(torch.nn.Module):
         return out, hidden
 
 
+# Load the ESOL dataset
+data = MoleculeNet(root='.', name='ESOL')
+
+# Investigating the dataset
+print("Dataset type:", type(data))
+print("Dataset features:", data.num_features)
+print("Dataset target:", data.num_classes)
+print("Dataset length:", data.len)
+# A sample
+print("Dataset sample:", data[0])
+print("Sample nodes:", data[0].num_nodes)
+print("Sample edges:", data[0].num_edges)
+
+embedding_size = 64
+
 model = GCN()
 print(model)
 print("Number of parameters: ", sum(p.numel() for p in model.parameters()))
-
-from torch_geometric.data import DataLoader
-import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -109,7 +116,11 @@ for epoch in range(2000):
     if epoch % 100 == 0:
         print(f"Epoch {epoch} | Train Loss {loss}")
 
-import pandas as pd
+# Visualize learning (training loss)
+losses_float = [float(loss.cpu().detach().numpy()) for loss in losses]
+loss_indices = [i for i, l in enumerate(losses_float)]
+sns.lineplot(loss_indices, losses_float)
+plt.show()
 
 # Analyze the results for one batch
 test_batch = next(iter(test_loader))
@@ -121,9 +132,6 @@ with torch.no_grad():
     df["y_pred"] = pred.tolist()
 df["y_real"] = df["y_real"].apply(lambda row: row[0])
 df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
-
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 sns.scatterplot(data=df, x="y_real", y="y_pred")
 plt.show()
