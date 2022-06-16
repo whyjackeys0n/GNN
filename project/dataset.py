@@ -4,22 +4,20 @@ import torch
 from torch_geometric.data import Dataset, download_url
 
 
-class MyOwnDataset(Dataset):
+class MoleculeDataset(Dataset):
     def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
         super().__init__(root, transform, pre_transform, pre_filter)
 
     @property
     def raw_file_names(self):
-        return ['some_file_1', 'some_file_2', ...]
+        return 'zeolite.csv'
 
     @property
     def processed_file_names(self):
-        return ['data_1.pt', 'data_2.pt', ...]
+        return 'not_implemented.pt'
 
     def download(self):
-        # Download to `self.raw_dir`.
-        path = download_url(url, self.raw_dir)
-        ...
+        pass
 
     def process(self):
         idx = 0
@@ -42,3 +40,6 @@ class MyOwnDataset(Dataset):
     def get(self, idx):
         data = torch.load(osp.join(self.processed_dir, f'data_{idx}.pt'))
         return data
+
+
+dataset = MoleculeDataset(root="data/")
