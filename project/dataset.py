@@ -15,7 +15,7 @@ class MoleculeDataset(Dataset):
 
     @property
     def raw_file_names(self):
-        return ['Li7La3Zr2O12.cif', 'LiLaZr2O12.cif']
+        return ['Li7La3Zr2O12.cif', 'LiLa5Ti8O24.cif']
 
     @property
     def processed_file_names(self):
@@ -30,25 +30,25 @@ class MoleculeDataset(Dataset):
             # Read data from `raw_path`.
             structure = Structure.from_file(raw_path)
             sg = StructureGraph.with_local_env_strategy(structure, JmolNN())
-            # Get node features
-            node_features = self._get_node_features(mol_obj)
-            # Get edge features
-            edge_features = self._get_edge_features(mol_obj)
-            # Get adjacency information
-            edge_index = self._get_adjacency_info(mol_obj)
+            # # Get node features
+            # node_features = self._get_node_features(mol_obj)
+            # # Get edge features
+            # edge_features = self._get_edge_features(mol_obj)
+            # # Get adjacency information
+            # edge_index = self._get_adjacency_info(mol_obj)
+            #
+            # # Create data object
+            # data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
+            #
+            # torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
 
-            # Create data object
-            data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
-
-            torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
-
-            if self.pre_filter is not None and not self.pre_filter(data):
-                continue
-
-            if self.pre_transform is not None:
-                data = self.pre_transform(data)
-
-            torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
+            # if self.pre_filter is not None and not self.pre_filter(data):
+            #     continue
+            #
+            # if self.pre_transform is not None:
+            #     data = self.pre_transform(data)
+            #
+            # torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
             idx += 1
 
     def _get_node_features(self, mol):
