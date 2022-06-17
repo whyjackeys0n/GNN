@@ -1,7 +1,7 @@
 import os.path as osp
-
 import torch
 from torch_geometric.data import Dataset, download_url
+from openbabel import pybel
 
 
 class MoleculeDataset(Dataset):
@@ -10,11 +10,11 @@ class MoleculeDataset(Dataset):
 
     @property
     def raw_file_names(self):
-        return 'zeolite.csv'
+        return ['Li7La3Zr2O12.cif', 'LiLaZr2O12.cif']
 
     @property
     def processed_file_names(self):
-        return 'not_implemented.pt'
+        return ['data_1.pt', 'data_2.pt']
 
     def download(self):
         pass
@@ -23,7 +23,7 @@ class MoleculeDataset(Dataset):
         idx = 0
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
-            data = Data(...)
+            mol = next(pybel.readfile("cif", raw_path))
 
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue
