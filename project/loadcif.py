@@ -14,9 +14,9 @@ pybelmol.write(mol2)
 pybelmol.close()
 
 
-suppl = Chem.SDMolSupplier('outputfile.sdf')
-
-mol1 = next(suppl)
+# suppl = Chem.SDMolSupplier('outputfile.sdf')
+#
+# mol1 = next(suppl)
 
 # for atom in rdmol.GetAtoms():
 #     print(atom.GetAtomicNum())  # Atom number

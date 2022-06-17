@@ -30,8 +30,8 @@ class MoleculeDataset(Dataset):
             # Read data from `raw_path`.
             structure = Structure.from_file(raw_path)
             sg = StructureGraph.with_local_env_strategy(structure, JmolNN())
-            # # Get node features
-            # node_features = self._get_node_features(mol_obj)
+            # Get node features
+            node_features = self._get_node_features(mol_obj)
             # # Get edge features
             # edge_features = self._get_edge_features(mol_obj)
             # # Get adjacency information
