@@ -30,6 +30,7 @@ class MoleculeDataset(Dataset):
             # Read data from `raw_path`.
             structure = Structure.from_file(raw_path)
             sg = StructureGraph.with_local_env_strategy(structure, JmolNN())
+            data = []
             # # Get node features
             # node_features = self._get_node_features(mol_obj)
             # # Get edge features
@@ -42,13 +43,13 @@ class MoleculeDataset(Dataset):
             #
             # torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
 
-            # if self.pre_filter is not None and not self.pre_filter(data):
-            #     continue
-            #
-            # if self.pre_transform is not None:
-            #     data = self.pre_transform(data)
-            #
-            # torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
+            if self.pre_filter is not None and not self.pre_filter(data):
+                continue
+
+            if self.pre_transform is not None:
+                data = self.pre_transform(data)
+
+            torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
             idx += 1
 
     def _get_node_features(self, mol):
