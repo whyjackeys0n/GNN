@@ -7,6 +7,7 @@ import torch
 from torch_geometric.data import Dataset, Data
 from rdkit.Chem import rdmolops
 from openbabel import pybel
+from rdkit import Chem
 
 
 class MoleculeDataset(Dataset):
@@ -15,7 +16,7 @@ class MoleculeDataset(Dataset):
 
     @property
     def raw_file_names(self):
-        return ['Li7La3Zr2O12.cif', 'LiLa5Ti8O24.cif']
+        return ['1552087.cif', '7202540.cif']
 
     @property
     def processed_file_names(self):
@@ -28,18 +29,25 @@ class MoleculeDataset(Dataset):
         idx = 0
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
+            mol = next(pybel.readfile("cif", raw_path))
+            pybelmol = pybel.Outputfile("sdf", "outputfile.sdf", overwrite=True)
+            pybelmol.write(mol)
+            pybelmol.close()
 
-            # # Get node features
-            # node_features = self._get_node_features(mol_obj)
-            # # Get edge features
-            # edge_features = self._get_edge_features(mol_obj)
-            # # Get adjacency information
-            # edge_index = self._get_adjacency_info(mol_obj)
-            #
-            # # Create data object
-            # data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
-            #
-            # torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
+            suppl = Chem.SDMolSupplier('outputfile.sdf')
+            rdmol = next(suppl)
+
+            # Get node features
+            node_features = self._get_node_features(rdmol)
+            # Get edge features
+            edge_features = self._get_edge_features(rdmol)
+            # Get adjacency information
+            edge_index = self._get_adjacency_info(rdmol)
+
+            # Create data object
+            data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
+
+            torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
 
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue
@@ -57,7 +65,7 @@ class MoleculeDataset(Dataset):
         """
         all_node_feats = []
 
-        for atom in mol.atoms():
+        for atom in mol.GetAtoms():
             node_feats = []
             # Feature 1: Atomic number
             node_feats.append(atom.GetAtomicNum())
@@ -109,4 +117,11 @@ class MoleculeDataset(Dataset):
         return data
 
 
+# Test the dataset
 dataset = MoleculeDataset(root="data/")
+
+# Print the number of samples in the dataset
+print(dataset[0].edge_index.t())
+print(dataset[0].x)
+print(dataset[0].edge_attr)
+print(dataset[0].
