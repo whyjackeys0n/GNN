@@ -28,9 +28,7 @@ class MoleculeDataset(Dataset):
         idx = 0
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
-            structure = Structure.from_file(raw_path)
-            sg = StructureGraph.with_local_env_strategy(structure, JmolNN())
-            data = []
+
             # # Get node features
             # node_features = self._get_node_features(mol_obj)
             # # Get edge features
