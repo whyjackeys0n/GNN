@@ -1,7 +1,4 @@
 import os.path as osp
-from pymatgen.core.structure import Structure, Molecule
-from pymatgen.analysis.graphs import StructureGraph
-from pymatgen.analysis.local_env import JmolNN
 import numpy as np
 import torch
 from torch_geometric.data import Dataset, Data
