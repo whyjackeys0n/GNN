@@ -44,8 +44,6 @@ class MoleculeDataset(Dataset):
             # Create data object
             data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
 
-            torch.save(data, osp.join(self.processed_dir, f'data_{idx}.pt'))
-
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue
 
