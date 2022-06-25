@@ -34,8 +34,8 @@ edge_pred_graph.edata['label'] = torch.randn(1000)
 edge_pred_graph.edata['train_mask'] = torch.zeros(1000, dtype=torch.bool).bernoulli(0.6)
 
 
-# 3 Define predictor to compute feature of edge.
-# Here gives two predictors `DotProductPredictor` and `MLPPredictor`, but we only apply the former predictor `DotProductPredictor`.
+# 3 Define predictor to compute feature of edge. Here gives two predictors `DotProductPredictor` and `MLPPredictor`,
+# but we only apply the former predictor `DotProductPredictor`.
 class DotProductPredictor(nn.Module):
     # Simply compute the feature of edge by do dot production using the source node and dst
     def forward(self, graph, h):
