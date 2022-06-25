@@ -6,8 +6,8 @@ import numpy as np
 import networkx as nx
 import dgl.nn as dglnn
 import torch.nn as nn
-import torch.nn.functional as F
-import dgl.function as fn
+import torch.nn.functional as tf
+import dgl.function as df
 import matplotlib.pyplot as plt
 
 
@@ -21,7 +21,7 @@ class SAGE(nn.Module):
     def forward(self, graph, inputs):
         # inputs are features of nodes
         h = self.conv1(graph, inputs)
-        h = F.relu(h)
+        h = tf.relu(h)
         h = self.conv2(graph, h)
         return h
 
@@ -49,7 +49,7 @@ class DotProductPredictor(nn.Module):
         # in the node classification section (Section 5.1).
         with graph.local_scope():
             graph.ndata['h'] = h
-            graph.apply_edges(fn.u_dot_v('h', 'h', 'score'))
+            graph.apply_edges(df.u_dot_v('h', 'h', 'score'))
             return graph.edata['score']
 
 
