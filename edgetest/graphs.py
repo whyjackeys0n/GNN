@@ -3,10 +3,12 @@
 import dgl
 import torch
 import numpy as np
+import networkx as nx
 import dgl.nn as dglnn
 import torch.nn as nn
 import torch.nn.functional as F
 import dgl.function as fn
+import matplotlib.pyplot as plt
 
 
 # 1 Construct a two-layer GNN model.
@@ -25,13 +27,17 @@ class SAGE(nn.Module):
 
 
 # 2 Generate data randomly.
-src = np.random.randint(0, 100, 500)
-dst = np.random.randint(0, 100, 500)
-edge_pred_graph = dgl.graph((np.concatenate([src, dst]), np.concatenate([dst, src])))
-edge_pred_graph.ndata['feature'] = torch.randn(100, 10)
-edge_pred_graph.edata['feature'] = torch.randn(1000, 10)
-edge_pred_graph.edata['label'] = torch.randn(1000)
-edge_pred_graph.edata['train_mask'] = torch.zeros(1000, dtype=torch.bool).bernoulli(0.6)
+src = np.random.randint(0, 10, 25)
+dst = np.random.randint(0, 10, 25)
+edge_pred_graph = dgl.graph((np.concatenate([src, dst]), np.concatenate([dst, src])), num_nodes=10)
+gx = dgl.to_networkx(edge_pred_graph)
+nx.draw_networkx(gx)
+plt.show()
+
+edge_pred_graph.ndata['feature'] = torch.randn(10, 10)
+edge_pred_graph.edata['feature'] = torch.randn(50, 10)
+edge_pred_graph.edata['label'] = torch.randn(50)
+edge_pred_graph.edata['train_mask'] = torch.zeros(50, dtype=torch.bool).bernoulli(0.6)
 
 
 # 3 Define predictor to compute feature of edge. Here gives two predictors `DotProductPredictor` and `MLPPredictor`,
@@ -66,7 +72,7 @@ train_mask = edge_pred_graph.edata['train_mask']
 # Train model.
 model = Model(10, 20, 5)
 opt = torch.optim.Adam(model.parameters())
-for epoch in range(1000):
+for epoch in range(100):
     pred = model(edge_pred_graph, node_features)
     loss = ((pred[train_mask] - edge_label[train_mask]) ** 2).mean()
     opt.zero_grad()
@@ -76,3 +82,14 @@ for epoch in range(1000):
 
 # Save model.
 torch.save(model.state_dict(), 'edge_sage.m')
+
+src = np.random.randint(0, 20, 50)
+dst = np.random.randint(0, 20, 50)
+edge_pred_graph2 = dgl.graph((np.concatenate([src, dst]), np.concatenate([dst, src])), num_nodes=20)
+gx2 = dgl.to_networkx(edge_pred_graph2)
+nx.draw_networkx(gx2)
+plt.show()
+edge_pred_graph2.ndata['feature'] = torch.randn(20, 10)
+edge_pred_graph2.edata['feature'] = torch.randn(100, 10)
+node_features2 = edge_pred_graph2.ndata['feature']
+pred2 = model(edge_pred_graph2, node_features2)
