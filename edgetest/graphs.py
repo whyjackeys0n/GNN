@@ -44,13 +44,10 @@ edge_pred_graph.edata['label'] = torch.randn(50)
 edge_pred_graph.edata['train_mask'] = torch.zeros(50, dtype=torch.bool).bernoulli(0.6)
 
 
-# 3 Define predictor to compute feature of edge. Here gives two predictors `DotProductPredictor` and `MLPPredictor`,
-# but we only apply the former predictor `DotProductPredictor`.
+# 3 Define predictor to compute feature of edge. Here gives two predictors `DotProductPredictor`.
 class DotProductPredictor(nn.Module):
-    # Simply compute the feature of edge by do dot production using the source node and dst
+    # Compute the feature of edge by do dot production using the source node and dst
     def forward(self, graph, h):
-        # h contains the node representations computed from the GNN defined
-        # in the node classification section (Section 5.1).
         with graph.local_scope():
             graph.ndata['h'] = h
             graph.apply_edges(df.u_dot_v('h', 'h', 'score'))
@@ -70,7 +67,7 @@ class Model(nn.Module):
 
 
 node_features = edge_pred_graph.ndata['feature']
-edge_label = edge_pred_graph.edata['label']  # This is not label, but a value only. In this case we just do regression.
+edge_label = edge_pred_graph.edata['label']
 train_mask = edge_pred_graph.edata['train_mask']
 
 # Train model.
