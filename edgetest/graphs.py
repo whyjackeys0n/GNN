@@ -10,6 +10,10 @@ import torch.nn.functional as tf
 import dgl.function as df
 import matplotlib.pyplot as plt
 
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 
 # 1 Construct a two-layer GNN model.
 class SAGE(nn.Module):
