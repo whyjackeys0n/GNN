@@ -136,3 +136,7 @@ for epoch in range(1000):
     loss.backward()
     opt.step()
     print(loss.item())
+
+# Save model.
+torch.save(model.state_dict(), 'edge_sage.m')
+
