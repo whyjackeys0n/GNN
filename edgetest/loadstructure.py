@@ -129,7 +129,7 @@ train_mask = edge_pred_graph.edata['train_mask']
 # Train model.
 model = Model(10, 20, 5)
 opt = torch.optim.Adam(model.parameters())
-for epoch in range(100):
+for epoch in range(1000):
     pred = model(edge_pred_graph, node_features)
     loss = ((pred[train_mask] - edge_label[train_mask]) ** 2).mean()
     opt.zero_grad()
