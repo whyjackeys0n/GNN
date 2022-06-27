@@ -13,11 +13,11 @@ class MoleculeDataset(Dataset):
 
     @property
     def raw_file_names(self):
-        return ['1552087.cif', '7202540.cif']
+        return ['1552087.cif', '7202540.cif', '9016301.cif']
 
     @property
     def processed_file_names(self):
-        return ['data_1.pt', 'data_2.pt']
+        return ['data_1.pt', 'data_2.pt', 'data_3.pt']
 
     def download(self):
         pass
@@ -116,7 +116,7 @@ class MoleculeDataset(Dataset):
 dataset = MoleculeDataset(root="data/")
 
 # Print the number of samples in the dataset
-print(dataset[0].edge_index.t())
-print(dataset[0].x)
-print(dataset[0].edge_attr)
+print(dataset[2].edge_index.t())
+print(dataset[2].x)
+print(dataset[2].edge_attr)
 
