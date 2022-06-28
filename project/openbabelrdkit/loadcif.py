@@ -32,8 +32,8 @@ def get_node_features(mol):
     all_node_feats = np.asarray(all_node_feats)
     return torch.tensor(all_node_feats, dtype=torch.float)
 
-mol1 = next(pybel.readfile("cif", "./data/raw/1552087.cif"))
-mol2 = next(pybel.readfile("cif", "./data/raw/7202540.cif"))
+mol1 = next(pybel.readfile("cif", "data/raw/1552087.cif"))
+mol2 = next(pybel.readfile("cif", "data/raw/7202540.cif"))
 # pybelmol = pybel.Molecule(mol)
 # pybelmol.write("sdf", "outputfile.sdf", overwrite=True)
 pybelmol = pybel.Outputfile("sdf", "outputfile.sdf", overwrite=True)
