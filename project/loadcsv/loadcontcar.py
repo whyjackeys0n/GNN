@@ -42,7 +42,7 @@ for i in range(len(structure_from_contcar)):
     distance_matrix.append(distance_list)
 
 # Get node features from pymatgen structure
-atomic_number_list = structure_from_contcar.atomic_numbers
+atomic_number_list = torch.tensor(structure_from_contcar.atomic_numbers)
 
 # Get adjacency matrix from pymatgen structure
 distance_np_matrix = np.array(distance_matrix)
@@ -62,7 +62,7 @@ row = torch.from_numpy(adj.row.astype(np.int64)).to(torch.long)
 col = torch.from_numpy(adj.col.astype(np.int64)).to(torch.long)
 edge_index = torch.stack([row, col], dim=0)
 
-dataset = Data(x=x, edge_index=edge_index, num_classes=2)
+dataset = Data(x=atomic_number_list, edge_index=edge_index, num_classes=2)
 
 
 class GCN(torch.nn.Module):
