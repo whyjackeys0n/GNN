@@ -1,10 +1,17 @@
 import os.path as osp
+import os
 import numpy as np
 import torch
 from torch_geometric.data import Dataset, Data
 from rdkit.Chem import rdmolops
 from openbabel import pybel
 from rdkit import Chem
+from pymatgen.core.structure import Structure, Molecule
+import networkx as nx
+import torch.nn.functional as F
+from torch_geometric.nn import GCNConv
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 
 
 class MoleculeDataset(Dataset):
@@ -13,11 +20,11 @@ class MoleculeDataset(Dataset):
 
     @property
     def raw_file_names(self):
-        return ['1552087.cif', '7202540.cif', '9016301.cif']
+        return os.listdir(self.raw_dir)
 
     @property
     def processed_file_names(self):
-        return ['data_1.pt', 'data_2.pt', 'data_3.pt']
+        return [contcar + '.pt' for contcar in self.raw_file_names]
 
     def download(self):
         pass
@@ -26,20 +33,14 @@ class MoleculeDataset(Dataset):
         idx = 0
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
-            mol = next(pybel.readfile("cif", raw_path))
-            pybelmol = pybel.Outputfile("sdf", "outputfile.sdf", overwrite=True)
-            pybelmol.write(mol)
-            pybelmol.close()
-
-            suppl = Chem.SDMolSupplier('outputfile.sdf')
-            rdmol = next(suppl)
+            structure_from_contcar = Structure.from_file(raw_path)
 
             # Get node features
-            node_features = self._get_node_features(rdmol)
+            node_features = self._get_node_features(structure_from_contcar)
             # Get edge features
-            edge_features = self._get_edge_features(rdmol)
+            edge_features = self._get_edge_features(structure_from_contcar)
             # Get adjacency information
-            edge_index = self._get_adjacency_info(rdmol)
+            edge_index = self._get_adjacency_info(structure_from_contcar)
 
             # Create data object
             data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
