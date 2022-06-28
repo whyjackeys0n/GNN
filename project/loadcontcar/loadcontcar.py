@@ -56,13 +56,13 @@ for i in range(len(distance_np_matrix)):
     for j in range(len(distance_np_matrix)):
         G.add_edge(i, j, weight=distance_np_matrix[i][j])
 
-
+x = torch.eye(G.number_of_nodes(), dtype=torch.float)
 adj = nx.to_scipy_sparse_array(G).tocoo()
 row = torch.from_numpy(adj.row.astype(np.int64)).to(torch.long)
 col = torch.from_numpy(adj.col.astype(np.int64)).to(torch.long)
 edge_index = torch.stack([row, col], dim=0)
 
-dataset = Data(x=atomic_number_list, edge_index=edge_index, num_classes=2)
+dataset = Data(x=x, edge_index=edge_index, num_classes=2)
 
 
 class GCN(torch.nn.Module):
