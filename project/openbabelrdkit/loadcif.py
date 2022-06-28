@@ -51,7 +51,7 @@ for atom in rdmol1.GetAtoms():
 
 kk = get_node_features(rdmol1)
 
-# structure = Structure.from_file("data\\raw\\Li7La3Zr2O12.cif")
+# structure = Structure.from_file("data\\CONTCAR\\Li7La3Zr2O12.cif")
 # sg = StructureGraph.with_local_env_strategy(structure, JmolNN())
 # g = sg.graph
 
