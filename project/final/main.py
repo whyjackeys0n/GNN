@@ -78,7 +78,7 @@ class MoleculeDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        return [contcar + '.pt' for contcar in self.raw_file_names]
+        return ['data_' + str(data_index) + '.pt' for data_index in range(len(self.raw_file_names))]
 
     def download(self):
         pass
@@ -91,10 +91,8 @@ class MoleculeDataset(Dataset):
 
             # Get node features
             node_features = _get_node_features(structure_from_contcar)
-
             # Get edge features
             edge_features = _get_edge_features(structure_from_contcar)
-
             # Get adjacency information
             edge_index = _get_adjacency_info(structure_from_contcar)
 
