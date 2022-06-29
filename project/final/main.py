@@ -11,7 +11,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 
-def _get_node_features(structure):
+def get_node_features(structure):
     """
     This will return a matrix / 2d array of the shape
     [Number of Nodes, Node Feature Size]
@@ -29,7 +29,7 @@ def _get_node_features(structure):
     return torch.tensor(all_node_feats, dtype=torch.float)
 
 
-def _get_edge_features(structure):
+def get_edge_features(structure):
     """
     This will return a matrix / 2d array of the shape
     [Number of Edges, Edge Feature Size]
@@ -46,7 +46,7 @@ def _get_edge_features(structure):
     return torch.tensor(all_edge_feats, dtype=torch.float)
 
 
-def _get_adjacency_info(structure):
+def get_adjacency_info(structure):
     distance_matrix = []
     for i in range(len(structure)):
         distance_list = []
@@ -68,6 +68,12 @@ def _get_adjacency_info(structure):
     return edge_index
 
 
+def get_labels(label):
+    label = np.asarray(label)
+    y = torch.from_numpy(label).type(torch.long)
+    return y
+
+
 class MoleculeDataset(Dataset):
     def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
         super().__init__(root, transform, pre_transform, pre_filter)
@@ -85,19 +91,22 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
+        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
 
             # Get node features
-            node_features = _get_node_features(structure_from_contcar)
+            node_features = get_node_features(structure_from_contcar)
             # Get edge features
-            edge_features = _get_edge_features(structure_from_contcar)
+            edge_features = get_edge_features(structure_from_contcar)
             # Get adjacency information
-            edge_index = _get_adjacency_info(structure_from_contcar)
+            edge_index = get_adjacency_info(structure_from_contcar)
+            # Get labels information
+            label = get_labels([label_list[idx]])
 
             # Create data object
-            data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
+            data = Data(edge_index=edge_index, x=node_features, edge_attr=edge_features, y=label)
 
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue
@@ -123,3 +132,5 @@ dataset = MoleculeDataset(root="data/")
 print(dataset[2].edge_index.t())
 print(dataset[2].x)
 print(dataset[2].edge_attr)
+
+data = dataset[0]
