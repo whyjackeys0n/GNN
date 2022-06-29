@@ -10,8 +10,6 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
 
 
 def get_node_features(structure):
@@ -175,7 +173,7 @@ for step, data in enumerate(train_loader):
 class GCN(torch.nn.Module):
     def __init__(self, hidden_channels):
         super(GCN, self).__init__()
-        torch.manual_seed(12345)
+        torch.manual_seed(587)
         self.conv1 = GCNConv(dataset.num_node_features, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
