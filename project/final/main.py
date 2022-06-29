@@ -35,24 +35,12 @@ def _get_edge_features(structure):
     [Number of Edges, Edge Feature Size]
     """
     all_edge_feats = []
-
-    distance_matrix = []
     for i in range(len(structure)):
-        distance_list = []
         for j in range(len(structure)):
-            distance_list.append(structure.get_distance(i, j))
-        distance_matrix.append(distance_list)
-
-    distance_np_matrix = np.array(distance_matrix)
-
-    for bond in structure.get_all_bonds():
-        edge_feats = []
-        # Feature 1: Bond type
-        edge_feats.append(bond.order)
-        # Feature 2: Bond length
-        edge_feats.append(distance_np_matrix[bond.GetBeginAtomIdx()][bond.GetEndAtomIdx()])
-        # Append edge features to matrix
-        all_edge_feats.append(edge_feats)
+            edge_feats = []
+            # Feature 1: Bond length
+            edge_feats.append(structure.get_distance(i, j))
+            all_edge_feats.append(edge_feats)
 
     all_edge_feats = np.asarray(all_edge_feats)
     return torch.tensor(all_edge_feats, dtype=torch.float)
@@ -105,14 +93,13 @@ class MoleculeDataset(Dataset):
             node_features = _get_node_features(structure_from_contcar)
 
             # Get edge features
-            # edge_features = self._get_edge_features(structure_from_contcar)
+            edge_features = _get_edge_features(structure_from_contcar)
 
             # Get adjacency information
             edge_index = _get_adjacency_info(structure_from_contcar)
 
             # Create data object
-            # data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
-            data = Data(x=node_features, edge_index=edge_index)
+            data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_features)
 
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue
