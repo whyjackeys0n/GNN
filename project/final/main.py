@@ -3,9 +3,6 @@ import os
 import numpy as np
 import torch
 from torch_geometric.data import Dataset, Data
-from rdkit.Chem import rdmolops
-from openbabel import pybel
-from rdkit import Chem
 from pymatgen.core.structure import Structure, Molecule
 import networkx as nx
 import torch.nn.functional as F
@@ -21,25 +18,39 @@ def _get_node_features(structure):
     """
     all_node_feats = []
 
-    for atom in st
+    for atom in structure.atomic_numbers:
         node_feats = []
-    all_node_feats = [structure.atomic_numbers, structure.atomic_numbers]
+        # Feature 1: Atomic number
+        node_feats.append(structure.atomic_numbers[atom])
+        # Append node features to matrix
+        all_node_feats.append(node_feats)
 
     all_node_feats = np.asarray(all_node_feats)
     return torch.tensor(all_node_feats, dtype=torch.float)
 
 
-def _get_edge_features(mol):
+def _get_edge_features(structure):
     """
     This will return a matrix / 2d array of the shape
     [Number of Edges, Edge Feature Size]
     """
     all_edge_feats = []
 
-    for bond in mol.GetBonds():
-        # Feature 1: Bond type (as double)
-        # Feature 2: Rings
-        edge_feats = [bond.GetBondTypeAsDouble(), bond.IsInRing()]
+    distance_matrix = []
+    for i in range(len(structure)):
+        distance_list = []
+        for j in range(len(structure)):
+            distance_list.append(structure.get_distance(i, j))
+        distance_matrix.append(distance_list)
+
+    distance_np_matrix = np.array(distance_matrix)
+
+    for bond in structure.get_all_bonds():
+        edge_feats = []
+        # Feature 1: Bond type
+        edge_feats.append(bond.order)
+        # Feature 2: Bond length
+        edge_feats.append(distance_np_matrix[bond.GetBeginAtomIdx()][bond.GetEndAtomIdx()])
         # Append edge features to matrix
         all_edge_feats.append(edge_feats)
 
@@ -60,7 +71,7 @@ def _get_adjacency_info(structure):
 
     for i in range(len(distance_np_matrix)):
         for j in range(len(distance_np_matrix)):
-            G.add_edge(i, j, weight=distance_np_matrix[i][j])
+            G.add_edge(i, j)
 
     adj = nx.to_scipy_sparse_array(G).tocoo()
     row = torch.from_numpy(adj.row.astype(np.int64)).to(torch.long)
@@ -92,8 +103,10 @@ class MoleculeDataset(Dataset):
 
             # Get node features
             node_features = _get_node_features(structure_from_contcar)
+
             # Get edge features
             # edge_features = self._get_edge_features(structure_from_contcar)
+
             # Get adjacency information
             edge_index = _get_adjacency_info(structure_from_contcar)
 
@@ -125,4 +138,3 @@ dataset = MoleculeDataset(root="data/")
 print(dataset[2].edge_index.t())
 print(dataset[2].x)
 print(dataset[2].edge_attr)
-
