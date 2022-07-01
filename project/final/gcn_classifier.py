@@ -28,8 +28,7 @@ def visualize(h, color, epoch=None, loss=None):
         if epoch is not None and loss is not None:
             plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
     else:
-        nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False,
-                         node_color=color, cmap="Set2")
+        nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False, node_color=color, cmap="Set2")
     plt.show()
 
 
@@ -155,11 +154,9 @@ print(f'Dataset: {dataset}:')
 print('====================')
 print(f'Number of graphs: {len(dataset)}')
 print(f'Number of features: {dataset.num_features}')
-# print(f'Number of classes: {dataset.num_classes}')
+print(f'Number of classes: {dataset.num_classes}')
 
 data = dataset[0]  # Get the first graph object.
-G = to_networkx(data)
-visualize(G, color=data.y)
 
 print()
 print(data)
@@ -247,7 +244,7 @@ def test(loader):
     return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
 
-for epoch in range(1, 101):
+for epoch in range(1, 11):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
