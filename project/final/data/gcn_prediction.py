@@ -10,6 +10,27 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
+import matplotlib.pyplot as plt
+from torch_geometric.utils import to_networkx
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+
+# Visualization function for NX graph or PyTorch tensor
+def visualize(h, color, epoch=None, loss=None):
+    plt.figure(figsize=(7, 7))
+    plt.xticks([])
+    plt.yticks([])
+
+    if torch.is_tensor(h):
+        h = h.detach().cpu().numpy()
+        plt.scatter(h[:, 0], h[:, 1], s=140, c=color, cmap="Set2")
+        if epoch is not None and loss is not None:
+            plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
+    else:
+        nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False,
+                         node_color=color, cmap="Set2")
+    plt.show()
 
 
 def get_node_features(structure):
@@ -137,6 +158,8 @@ print(f'Number of features: {dataset.num_features}')
 # print(f'Number of classes: {dataset.num_classes}')
 
 data = dataset[0]  # Get the first graph object.
+G = to_networkx(data)
+visualize(G, color=data.y)
 
 print()
 print(data)
@@ -200,14 +223,12 @@ class GCN(torch.nn.Module):
 model = GCN(hidden_channels=64)
 print(model)
 
-model = GCN(hidden_channels=64)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 criterion = torch.nn.CrossEntropyLoss()
 
 
 def train():
     model.train()
-
     for data in train_loader:  # Iterate in batches over the training dataset.
         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
         loss = criterion(out, data.y)  # Compute the loss.
@@ -218,7 +239,6 @@ def train():
 
 def test(loader):
     model.eval()
-
     correct = 0
     for data in loader:  # Iterate in batches over the training/test dataset.
         out = model(data.x, data.edge_index, data.batch)
