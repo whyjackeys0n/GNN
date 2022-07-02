@@ -217,7 +217,7 @@ class GCN(torch.nn.Module):
         return x
 
 
-model = GCN(hidden_channels=64)
+model = GCN(hidden_channels=4)
 print(model)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -240,6 +240,7 @@ def test(loader):
     for data in loader:  # Iterate in batches over the training/test dataset.
         out = model(data.x, data.edge_index, data.batch)
         pred = out.argmax(dim=1)  # Use the class with the highest probability.
+        print(pred)
         correct += int((pred == data.y).sum())  # Check against ground-truth labels.
     return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
