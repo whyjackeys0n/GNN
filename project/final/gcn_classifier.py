@@ -17,19 +17,19 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 # Visualization function for NX graph or PyTorch tensor
-def visualize(h, color, epoch=None, loss=None):
-    plt.figure(figsize=(7, 7))
-    plt.xticks([])
-    plt.yticks([])
-
-    if torch.is_tensor(h):
-        h = h.detach().cpu().numpy()
-        plt.scatter(h[:, 0], h[:, 1], s=140, c=color, cmap="Set2")
-        if epoch is not None and loss is not None:
-            plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
-    else:
-        nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False, node_color=color, cmap="Set2")
-    plt.show()
+# def visualize(h, color, epoch=None, loss=None):
+#     plt.figure(figsize=(7, 7))
+#     plt.xticks([])
+#     plt.yticks([])
+#
+#     if torch.is_tensor(h):
+#         h = h.detach().cpu().numpy()
+#         plt.scatter(h[:, 0], h[:, 1], s=140, c=color, cmap="Set2")
+#         if epoch is not None and loss is not None:
+#             plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
+#     else:
+#         nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False, node_color=color, cmap="Set2")
+#     plt.show()
 
 
 def get_node_features(structure):
@@ -112,7 +112,7 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -147,7 +147,7 @@ class MoleculeDataset(Dataset):
 
 
 dataset = MoleculeDataset(root="data/")
-dataset.num_classes = 2
+dataset.num_classes = 3
 
 print()
 print(f'Dataset: {dataset}:')
@@ -173,14 +173,14 @@ print(f'Is undirected: {data.is_undirected()}')
 torch.manual_seed(587)
 dataset = dataset.shuffle()
 
-train_dataset = dataset[:9]
-test_dataset = dataset[9:]
+train_dataset = dataset[:int(len(dataset) * 0.8)]
+test_dataset = dataset[int(len(dataset) * 0.8):]
 
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
 
-train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=6, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=6, shuffle=False)
 
 for step, data in enumerate(train_loader):
     print(f'Step {step + 1}:')
