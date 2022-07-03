@@ -8,6 +8,7 @@ contcar_list = os.listdir(contcar_path)
 json_path = os.getcwd() + "/data/raw"
 
 for i in range(len(contcar_list)):
+    print(f'Processing {i+1}/{len(contcar_list)}')
     # Change the file name to CONTCAR
     os.rename(contcar_path + "/" + contcar_list[i], contcar_path + "/CONTCAR")
 

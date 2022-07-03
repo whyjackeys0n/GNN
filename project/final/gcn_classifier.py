@@ -112,7 +112,7 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -241,7 +241,7 @@ def test(loader):
     for data in loader:  # Iterate in batches over the training/test dataset.
         out = model(data.x, data.edge_index, data.batch)
         pred = out.argmax(dim=1)  # Use the class with the highest probability.
-        print(pred)
+        # print(pred)
         correct += int((pred == data.y).sum())  # Check against ground-truth labels.
     return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
