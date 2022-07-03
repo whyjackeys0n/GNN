@@ -151,7 +151,6 @@ dataset.num_classes = 3
 
 print()
 print(f'Dataset: {dataset}:')
-print('====================')
 print(f'Number of graphs: {len(dataset)}')
 print(f'Number of features: {dataset.num_features}')
 print(f'Number of classes: {dataset.num_classes}')
@@ -176,12 +175,14 @@ dataset = dataset.shuffle()
 train_dataset = dataset[:int(len(dataset) * 0.8)]
 test_dataset = dataset[int(len(dataset) * 0.8):]
 
+print('=============================================================')
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
 
 train_loader = DataLoader(train_dataset, batch_size=6, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=6, shuffle=False)
 
+print('=============================================================')
 for step, data in enumerate(train_loader):
     print(f'Step {step + 1}:')
     print('=======')
