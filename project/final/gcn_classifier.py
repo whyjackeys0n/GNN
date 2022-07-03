@@ -39,7 +39,7 @@ def get_node_features(structure):
     """
     all_node_feats = []
 
-    for atom in structure.atomic_numbers:
+    for atom in range(len(structure)):
         node_feats = []
         # Feature 1: Atomic number
         node_feats.append(structure.atomic_numbers[atom])
@@ -112,7 +112,7 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -152,15 +152,14 @@ dataset.num_classes = 3
 print()
 print(f'Dataset: {dataset}:')
 print(f'Number of graphs: {len(dataset)}')
-print(f'Number of features: {dataset.num_features}')
+print(f'Number of node features: {dataset.num_node_features}')
+print(f'Number of edge features: {dataset.num_edge_features}')
 print(f'Number of classes: {dataset.num_classes}')
-
-data = dataset[0]  # Get the first graph object.
-
-print()
-print(data)
 print('=============================================================')
 
+data = dataset[0]  # Get the first graph object.
+print()
+print(data)
 # Gather some statistics about the first graph.
 print(f'Number of nodes: {data.num_nodes}')
 print(f'Number of edges: {data.num_edges}')
@@ -168,6 +167,8 @@ print(f'Average node degree: {data.num_edges / data.num_nodes:.2f}')
 print(f'Has isolated nodes: {data.has_isolated_nodes()}')
 print(f'Has self-loops: {data.has_self_loops()}')
 print(f'Is undirected: {data.is_undirected()}')
+print()
+
 
 torch.manual_seed(587)
 dataset = dataset.shuffle()
@@ -178,9 +179,11 @@ test_dataset = dataset[int(len(dataset) * 0.8):]
 print('=============================================================')
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
+print()
 
-train_loader = DataLoader(train_dataset, batch_size=6, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=6, shuffle=False)
+
+train_loader = DataLoader(train_dataset, batch_size=9, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=9, shuffle=False)
 
 print('=============================================================')
 for step, data in enumerate(train_loader):
@@ -219,7 +222,9 @@ class GCN(torch.nn.Module):
 
 
 model = GCN(hidden_channels=4)
+print('=============================================================')
 print(model)
+print()
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 criterion = torch.nn.CrossEntropyLoss()
@@ -246,7 +251,8 @@ def test(loader):
     return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
 
-for epoch in range(1, 11):
+print('=============================================================')
+for epoch in range(1, 101):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
