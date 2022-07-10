@@ -113,8 +113,8 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = pd.read_csv("energetics.csv")["E"].tolist()
-        # label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        # label_list = pd.read_csv("energetics.csv")["E"].tolist()
+        label_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -149,7 +149,7 @@ class MoleculeDataset(Dataset):
 
 
 dataset = MoleculeDataset(root="data/")
-dataset.num_classes = 3
+dataset.num_classes = 2
 
 print()
 print(f'Dataset: {dataset}:')
@@ -171,7 +171,6 @@ print(f'Has self-loops: {data.has_self_loops()}')
 print(f'Is undirected: {data.is_undirected()}')
 print()
 
-
 torch.manual_seed(587)
 dataset = dataset.shuffle()
 
@@ -183,9 +182,8 @@ print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
 print()
 
-
-train_loader = DataLoader(train_dataset, batch_size=9, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=9, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
 
 print('=============================================================')
 for step, data in enumerate(train_loader):
@@ -228,7 +226,7 @@ print('=============================================================')
 print(model)
 print()
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.02)
 criterion = torch.nn.CrossEntropyLoss()
 
 
@@ -254,7 +252,7 @@ def test(loader):
 
 
 print('=============================================================')
-for epoch in range(1, 11):
+for epoch in range(1, 101):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
