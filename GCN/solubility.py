@@ -110,7 +110,7 @@ def train(data):
 
 print("Starting training...")
 losses = []
-for epoch in range(2000):
+for epoch in range(200):
     loss, h = train(data)
     losses.append(loss)
     if epoch % 100 == 0:

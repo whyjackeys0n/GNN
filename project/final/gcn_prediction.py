@@ -13,6 +13,7 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
 import matplotlib.pyplot as plt
 from torch_geometric.utils import to_networkx
+import torch.nn as nn
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -113,8 +114,8 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        # label_list = pd.read_csv("energetics.csv")["E"].tolist()
-        label_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        label_list = pd.read_csv("energetics.csv")["E"].tolist()
+        # label_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -149,11 +150,12 @@ class MoleculeDataset(Dataset):
 
 
 dataset = MoleculeDataset(root="data/")
-dataset.num_classes = 2
+dataset.num_classes = 22
 
 print()
 print(f'Dataset: {dataset}:')
 print(f'Number of graphs: {len(dataset)}')
+print(f'Number of features: {dataset.num_features}')
 print(f'Number of node features: {dataset.num_node_features}')
 print(f'Number of edge features: {dataset.num_edge_features}')
 print(f'Number of classes: {dataset.num_classes}')
@@ -200,8 +202,8 @@ class GCN(torch.nn.Module):
         torch.manual_seed(587)
         self.conv1 = GCNConv(dataset.num_node_features, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
-        self.conv3 = GCNConv(hidden_channels, hidden_channels)
-        self.lin = Linear(hidden_channels, dataset.num_classes)
+        self.conv3 = GCNConv(hidden_channels, dataset.num_classes)
+        self.lin = Linear(dataset.num_classes, 1)
 
     def forward(self, x, edge_index, batch):
         # 1. Obtain node embeddings
@@ -209,13 +211,13 @@ class GCN(torch.nn.Module):
         x = x.relu()
         x = self.conv2(x, edge_index)
         x = x.relu()
-        x = self.conv3(x, edge_index)
 
         # 2. Readout layer
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
         x = F.dropout(x, p=0.5, training=self.training)
+        x = self.conv3(x, edge_index)
         x = self.lin(x)
 
         return x
