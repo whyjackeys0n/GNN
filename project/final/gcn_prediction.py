@@ -1,6 +1,7 @@
 import os.path as osp
 import os
 import numpy as np
+import pandas as pd
 import torch
 from torch_geometric.data import Dataset, Data
 from pymatgen.core.structure import Structure, Molecule
@@ -17,20 +18,19 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 # Visualization function for NX graph or PyTorch tensor
-def visualize(h, color, epoch=None, loss=None):
-    plt.figure(figsize=(7, 7))
-    plt.xticks([])
-    plt.yticks([])
-
-    if torch.is_tensor(h):
-        h = h.detach().cpu().numpy()
-        plt.scatter(h[:, 0], h[:, 1], s=140, c=color, cmap="Set2")
-        if epoch is not None and loss is not None:
-            plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
-    else:
-        nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False,
-                         node_color=color, cmap="Set2")
-    plt.show()
+# def visualize(h, color, epoch=None, loss=None):
+#     plt.figure(figsize=(7, 7))
+#     plt.xticks([])
+#     plt.yticks([])
+#
+#     if torch.is_tensor(h):
+#         h = h.detach().cpu().numpy()
+#         plt.scatter(h[:, 0], h[:, 1], s=140, c=color, cmap="Set2")
+#         if epoch is not None and loss is not None:
+#             plt.xlabel(f'Epoch: {epoch}, Loss: {loss.item():.4f}', fontsize=16)
+#     else:
+#         nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=False, node_color=color, cmap="Set2")
+#     plt.show()
 
 
 def get_node_features(structure):
@@ -40,7 +40,7 @@ def get_node_features(structure):
     """
     all_node_feats = []
 
-    for atom in structure.atomic_numbers:
+    for atom in range(len(structure)):
         node_feats = []
         # Feature 1: Atomic number
         node_feats.append(structure.atomic_numbers[atom])
@@ -113,7 +113,8 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        label_list = pd.read_csv("energetics.csv")["E"].tolist()
+        # label_list = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -148,23 +149,19 @@ class MoleculeDataset(Dataset):
 
 
 dataset = MoleculeDataset(root="data/")
-dataset.num_classes = 2
+dataset.num_classes = 3
 
 print()
 print(f'Dataset: {dataset}:')
-print('====================')
 print(f'Number of graphs: {len(dataset)}')
-print(f'Number of features: {dataset.num_features}')
-# print(f'Number of classes: {dataset.num_classes}')
-
-data = dataset[0]  # Get the first graph object.
-G = to_networkx(data)
-visualize(G, color=data.y)
-
-print()
-print(data)
+print(f'Number of node features: {dataset.num_node_features}')
+print(f'Number of edge features: {dataset.num_edge_features}')
+print(f'Number of classes: {dataset.num_classes}')
 print('=============================================================')
 
+data = dataset[0]  # Get the first graph object.
+print()
+print(data)
 # Gather some statistics about the first graph.
 print(f'Number of nodes: {data.num_nodes}')
 print(f'Number of edges: {data.num_edges}')
@@ -172,19 +169,25 @@ print(f'Average node degree: {data.num_edges / data.num_nodes:.2f}')
 print(f'Has isolated nodes: {data.has_isolated_nodes()}')
 print(f'Has self-loops: {data.has_self_loops()}')
 print(f'Is undirected: {data.is_undirected()}')
+print()
+
 
 torch.manual_seed(587)
 dataset = dataset.shuffle()
 
-train_dataset = dataset[:9]
-test_dataset = dataset[9:]
+train_dataset = dataset[:int(len(dataset) * 0.8)]
+test_dataset = dataset[int(len(dataset) * 0.8):]
 
+print('=============================================================')
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
+print()
 
-train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
 
+train_loader = DataLoader(train_dataset, batch_size=9, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=9, shuffle=False)
+
+print('=============================================================')
 for step, data in enumerate(train_loader):
     print(f'Step {step + 1}:')
     print('=======')
@@ -220,8 +223,10 @@ class GCN(torch.nn.Module):
         return x
 
 
-model = GCN(hidden_channels=64)
+model = GCN(hidden_channels=4)
+print('=============================================================')
 print(model)
+print()
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 criterion = torch.nn.CrossEntropyLoss()
@@ -243,11 +248,13 @@ def test(loader):
     for data in loader:  # Iterate in batches over the training/test dataset.
         out = model(data.x, data.edge_index, data.batch)
         pred = out.argmax(dim=1)  # Use the class with the highest probability.
+        # print(pred)
         correct += int((pred == data.y).sum())  # Check against ground-truth labels.
     return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
 
-for epoch in range(1, 101):
+print('=============================================================')
+for epoch in range(1, 11):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)

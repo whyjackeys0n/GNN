@@ -1,6 +1,7 @@
 import os.path as osp
 import os
 import numpy as np
+import pandas as pd
 import torch
 from torch_geometric.data import Dataset, Data
 from pymatgen.core.structure import Structure, Molecule
@@ -252,7 +253,7 @@ def test(loader):
 
 
 print('=============================================================')
-for epoch in range(1, 101):
+for epoch in range(1, 11):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
