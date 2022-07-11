@@ -48,6 +48,9 @@ class GCN(torch.nn.Module):
         hidden = F.tanh(hidden)
 
         # Global Pooling (stack different aggregations)
+        # gmp: Global Max Pooling
+        # gap: Global Average Pooling
+        # Twice size of the linear output layer
         hidden = torch.cat([gmp(hidden, batch_index), gap(hidden, batch_index)], dim=1)
 
         # Apply a final (linear) classifier.
