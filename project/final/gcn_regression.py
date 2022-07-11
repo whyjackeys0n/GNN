@@ -16,6 +16,8 @@ from torch.nn import Linear
 from torch_geometric.nn import GCNConv
 import warnings
 
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 
 class GCN(torch.nn.Module):
     def __init__(self):
@@ -46,19 +48,12 @@ class GCN(torch.nn.Module):
         hidden = F.tanh(hidden)
 
         # Global Pooling (stack different aggregations)
-        # gmp: Global Max Pooling
-        # gap: Global Average Pooling
-        # Twice size of the linear output layer
-        hidden = torch.cat([gmp(hidden, batch_index),
-                            gap(hidden, batch_index)], dim=1)
+        hidden = torch.cat([gmp(hidden, batch_index), gap(hidden, batch_index)], dim=1)
 
         # Apply a final (linear) classifier.
         out = self.out(hidden)
 
         return out, hidden
-
-
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 def get_node_features(structure):
@@ -206,14 +201,21 @@ model = model.to(device)
 
 # Wrap data in a data loader
 data_size = len(data)
-NUM_GRAPHS_PER_BATCH = 64
-loader = DataLoader(data[:int(data_size * 0.8)], batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
+NUM_GRAPHS_PER_BATCH = 13
+train_loader = DataLoader(data[:int(data_size * 0.8)], batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
 test_loader = DataLoader(data[int(data_size * 0.8):], batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
+
+for step, data in enumerate(train_loader):
+    print(f'Step {step + 1}:')
+    print('=======')
+    print(f'Number of graphs in the current batch: {data.num_graphs}')
+    print(data)
+    print()
 
 
 def train(data):
     # Enumerate over the data
-    for batch in loader:
+    for batch in train_loader:
         # Use GPU
         batch.to(device)
         # Reset gradients
@@ -230,7 +232,7 @@ def train(data):
 
 print("Starting training...")
 losses = []
-for epoch in range(100):
+for epoch in range(350):
     loss, h = train(data)
     losses.append(loss)
     if epoch % 10 == 0:
