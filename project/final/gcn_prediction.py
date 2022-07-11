@@ -93,7 +93,7 @@ def get_adjacency_info(structure):
 
 def get_labels(label):
     label = np.asarray(label)
-    y = torch.from_numpy(label).type(torch.long)
+    y = torch.from_numpy(label).type(torch.float)
     return y
 
 

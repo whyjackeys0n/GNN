@@ -10,6 +10,9 @@ import warnings
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 class GCN(torch.nn.Module):
@@ -110,7 +113,7 @@ def train(data):
 
 print("Starting training...")
 losses = []
-for epoch in range(200):
+for epoch in range(100):
     loss, h = train(data)
     losses.append(loss)
     if epoch % 100 == 0:
