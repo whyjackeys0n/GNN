@@ -141,7 +141,7 @@ class MoleculeDataset(Dataset):
 
     def process(self):
         idx = 0
-        label_list = pd.read_csv("energetics.csv")["E"].tolist()
+        label_list = pd.read_csv("energy.csv")["E"].tolist()
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -176,7 +176,7 @@ class MoleculeDataset(Dataset):
 
 
 data = MoleculeDataset(root="data/")
-data.num_classes = 22
+data.num_classes = 48
 
 # Investigating the dataset
 print("Dataset type:", type(data))
@@ -230,7 +230,7 @@ def train(data):
 
 print("Starting training...")
 losses = []
-for epoch in range(200):
+for epoch in range(100):
     loss, h = train(data)
     losses.append(loss)
     if epoch % 10 == 0:
@@ -250,8 +250,6 @@ with torch.no_grad():
     df = pd.DataFrame()
     df["y_real"] = test_batch.y.tolist()
     df["y_pred"] = pred.tolist()
-df["y_real"] = df["y_real"].apply(lambda row: row[0])
-df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
 
 sns.scatterplot(df["y_real"].to_list(), sum(df["y_pred"], []))
 plt.show()
