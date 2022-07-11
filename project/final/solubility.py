@@ -1,15 +1,20 @@
-import rdkit
-from torch_geometric.datasets import MoleculeNet
-import torch
-from torch.nn import Linear
-import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, TopKPooling, global_mean_pool
-from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
-from torch_geometric.data import DataLoader
-import warnings
-import pandas as pd
-import seaborn as sns
+import networkx as nx
 import matplotlib.pyplot as plt
+import seaborn as sns
+import os.path as osp
+import os
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn.functional as F
+from torch_geometric.data import Dataset, Data
+from torch_geometric.loader import DataLoader
+from torch_geometric.nn import global_mean_pool as gap
+from torch_geometric.nn import global_max_pool as gmp
+from pymatgen.core.structure import Structure
+from torch.nn import Linear
+from torch_geometric.nn import GCNConv
+import warnings
 
 
 class GCN(torch.nn.Module):
@@ -52,23 +57,6 @@ class GCN(torch.nn.Module):
 
         return out, hidden
 
-
-import os.path as osp
-import os
-import numpy as np
-import pandas as pd
-import torch
-from torch_geometric.data import Dataset, Data
-from pymatgen.core.structure import Structure, Molecule
-import networkx as nx
-from torch_geometric.loader import DataLoader
-from torch.nn import Linear
-import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
-from torch_geometric.nn import global_mean_pool
-import matplotlib.pyplot as plt
-from torch_geometric.utils import to_networkx
-import torch.nn as nn
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -154,7 +142,6 @@ class MoleculeDataset(Dataset):
     def process(self):
         idx = 0
         label_list = pd.read_csv("energetics.csv")["E"].tolist()
-        # label_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         for raw_path in self.raw_paths:
             # Read data from `raw_path`.
             structure_from_contcar = Structure.from_file(raw_path)
@@ -220,10 +207,8 @@ model = model.to(device)
 # Wrap data in a data loader
 data_size = len(data)
 NUM_GRAPHS_PER_BATCH = 64
-loader = DataLoader(data[:int(data_size * 0.8)],
-                    batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
-test_loader = DataLoader(data[int(data_size * 0.8):],
-                         batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
+loader = DataLoader(data[:int(data_size * 0.8)], batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
+test_loader = DataLoader(data[int(data_size * 0.8):], batch_size=NUM_GRAPHS_PER_BATCH, shuffle=True)
 
 
 def train(data):
@@ -245,10 +230,10 @@ def train(data):
 
 print("Starting training...")
 losses = []
-for epoch in range(2000):
+for epoch in range(200):
     loss, h = train(data)
     losses.append(loss)
-    if epoch % 100 == 0:
+    if epoch % 10 == 0:
         print(f"Epoch {epoch} | Train Loss {loss}")
 
 # Visualize learning (training loss)
@@ -258,15 +243,15 @@ sns.lineplot(loss_indices, losses_float)
 plt.show()
 
 # Analyze the results for one batch
-# test_batch = next(iter(test_loader))
-# with torch.no_grad():
-#     test_batch.to(device)
-#     pred, embed = model(test_batch.x.float(), test_batch.edge_index, test_batch.batch)
-#     df = pd.DataFrame()
-#     df["y_real"] = test_batch.y.tolist()
-#     df["y_pred"] = pred.tolist()
-# df["y_real"] = df["y_real"].apply(lambda row: row[0])
-# df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
-#
-# sns.scatterplot(data=df, x="y_real", y="y_pred")
-# plt.show()
+test_batch = next(iter(test_loader))
+with torch.no_grad():
+    test_batch.to(device)
+    pred, embed = model(test_batch.x.float(), test_batch.edge_index, test_batch.batch)
+    df = pd.DataFrame()
+    df["y_real"] = test_batch.y.tolist()
+    df["y_pred"] = pred.tolist()
+df["y_real"] = df["y_real"].apply(lambda row: row[0])
+df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
+
+sns.scatterplot(data=df, x="y_real", y="y_pred")
+plt.show()
