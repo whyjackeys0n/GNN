@@ -253,5 +253,5 @@ with torch.no_grad():
 df["y_real"] = df["y_real"].apply(lambda row: row[0])
 df["y_pred"] = df["y_pred"].apply(lambda row: row[0])
 
-sns.scatterplot(data=df, x="y_real", y="y_pred")
+sns.scatterplot(df["y_real"].to_list(), sum(df["y_pred"], []))
 plt.show()
